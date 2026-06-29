@@ -1,82 +1,88 @@
-CREATE DATABASE groupe1;
+CREATE DATABASE IF NOT EXISTS groupe1;
 USE groupe1;
 
--- Table Client
+/* CLIENT */
 CREATE TABLE Client (
     idClient INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(50),
-    prenom VARCHAR(50),
-    telephone VARCHAR(20),
-    adresse VARCHAR(100)
+    nom VARCHAR(50) NOT NULL,
+    prenom VARCHAR(50) NOT NULL,
+    telephone VARCHAR(20) NOT NULL,
+    adresse VARCHAR(100) NOT NULL,
+    email VARCHAR(100) UNIQUE,
+    motDePasse VARCHAR(255) NOT NULL
 );
 
--- Table Produit
-CREATE TABLE Produit (
-    idProduit INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(50),
-    prix DECIMAL(10,2),
-    quantite INT
-);
-
--- Table Gerant
+/* GERANT */
 CREATE TABLE Gerant (
     idGerant INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(50),
-    prenom VARCHAR(50),
-    telephone VARCHAR(20)
+    nom VARCHAR(50) NOT NULL,
+    prenom VARCHAR(50) NOT NULL,
+    telephone VARCHAR(20),
+    login VARCHAR(50) UNIQUE NOT NULL,
+    motDePasse VARCHAR(255) NOT NULL
 );
 
--- Table Livreur
+/* LIVREUR */
 CREATE TABLE Livreur (
     idLivreur INT PRIMARY KEY AUTO_INCREMENT,
-    nom VARCHAR(50),
-    prenom VARCHAR(50),
+    nom VARCHAR(50) NOT NULL,
+    prenom VARCHAR(50) NOT NULL,
     telephone VARCHAR(20),
     matriculeMoto VARCHAR(30)
 );
 
--- Table Commande
+/* PRODUIT */
+CREATE TABLE Produit (
+    idProduit INT PRIMARY KEY AUTO_INCREMENT,
+    nom VARCHAR(50) NOT NULL,
+    prix DECIMAL(10,2) NOT NULL,
+    quantite INT NOT NULL
+);
+
+/* COMMANDE */
 CREATE TABLE Commande (
     idCommande INT PRIMARY KEY AUTO_INCREMENT,
-    dateCommande DATE,
-    montant DECIMAL(10,2),
-    statut VARCHAR(30),
-    idClient INT,
-    idLivreur INT,
-    
+    dateCommande DATE NOT NULL,
+    montant DECIMAL(10,2) DEFAULT 0,
+    statut VARCHAR(30) DEFAULT 'en attente',
+
+    idClient INT NOT NULL,
+    idLivreur INT NULL,
+    idGerant INT NULL,
+
     FOREIGN KEY (idClient) REFERENCES Client(idClient),
-    FOREIGN KEY (idLivreur) REFERENCES Livreur(idLivreur)
+    FOREIGN KEY (idLivreur) REFERENCES Livreur(idLivreur),
+    FOREIGN KEY (idGerant) REFERENCES Gerant(idGerant)
 );
 
--- Table DetailCommande
+/* DETAIL COMMANDE */
 CREATE TABLE DetailCommande (
+    idDetail INT AUTO_INCREMENT PRIMARY KEY,
     idProduit INT,
     idCommande INT,
-    quantite INT,
+    quantite INT NOT NULL,
     montant DECIMAL(10,2),
 
-    PRIMARY KEY (idProduit, idCommande),
-
-    FOREIGN KEY (idProduit) REFERENCES Produit(idProduit),
-    FOREIGN KEY (idCommande) REFERENCES Commande(idCommande)
+    FOREIGN KEY (idProduit) REFERENCES Produit(idProduit) ON DELETE CASCADE,
+    FOREIGN KEY (idCommande) REFERENCES Commande(idCommande) ON DELETE CASCADE
 );
 
--- Table Facture
+/* FACTURE */
 CREATE TABLE Facture (
     idFacture INT PRIMARY KEY AUTO_INCREMENT,
-    dateFacture DATE,
-    montant DECIMAL(10,2),
+    dateFacture DATE NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
     idCommande INT UNIQUE,
 
     FOREIGN KEY (idCommande) REFERENCES Commande(idCommande)
 );
 
--- Table Paiement
+/* PAIEMENT */
 CREATE TABLE Paiement (
     idPaiement INT PRIMARY KEY AUTO_INCREMENT,
-    datePaiement DATE,
-    montant DECIMAL(10,2),
-    typePaiement VARCHAR(30),
+    datePaiement DATE NOT NULL,
+    montant DECIMAL(10,2) NOT NULL,
+    typePaiement VARCHAR(30) NOT NULL,
     idFacture INT,
 
     FOREIGN KEY (idFacture) REFERENCES Facture(idFacture)
